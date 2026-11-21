@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Perlica - Face SDF
+  m_Shader: {fileID: 4800000, guid: 02c575ed5f842b84ea195f567147fd96, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: 73267b8db1d44f043aa8d45cda72b9ea, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FaceSdf:
+        m_Texture: {fileID: 2800000, guid: d8beaf961d539be45b5558a83c16bc43, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _LipGlossMap:
+        m_Texture: {fileID: 2800000, guid: 6edfbf9ef441e5d4bb80186618db19a7, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _DebugView: 0
+    - _Feather: 0.014
+    - _InvertMask: 0
+    - _LinearizeMaskRgb: 0
+    - _LipGlossStrength: 0.36
+    - _MaskSource: 0
+    - _MaskUV: 0
+    - _MirrorConvention: 0
+    - _ThresholdMode: 2
+    m_Colors:
+    - _LitColor: {r: 1, g: 1, b: 1, a: 1}
+    - _ShadeColor: {r: 0.8784314, g: 0.76862746, b: 0.7137255, a: 1}
+    - _ThresholdRange: {r: 0.035, g: 0.98, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

@@ -1,0 +1,52 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f146c72a32107164cab07a31b96443c0, type: 3}
+  m_Name: Storm Lab Workflow
+  m_EditorClassIdentifier: Assembly-CSharp::StormLab.VfxFlow
+  entry: 5b50e4a36aba4f6d9ae02c9695d54b91
+  nodes:
+  - id: 5b50e4a36aba4f6d9ae02c9695d54b91
+    next: a49ec13b1f72428b8b536956bbe37c43
+    stage: 0
+    position: {x: 63.89299, y: 340.97787}
+    duration: 1.45
+    layers:
+    - effect: 0
+      delay: 0
+      duration: 0
+    - effect: 1
+      delay: 0
+      duration: 0
+    - effect: 2
+      delay: 0
+      duration: 0
+  - id: a49ec13b1f72428b8b536956bbe37c43
+    next: 6739b0f0902049d9a9892141a5b394e4
+    stage: 1
+    position: {x: 342.71957, y: 376.30997}
+    duration: 0.28
+    layers:
+    - effect: 3
+      delay: 0
+      duration: 0
+  - id: 6739b0f0902049d9a9892141a5b394e4
+    next: 
+    stage: 2
+    position: {x: 560.7749, y: 161.49077}
+    duration: 0.72
+    layers:
+    - effect: 4
+      delay: 0
+      duration: 0
+    - effect: 0
+      delay: 0
+      duration: 0.39

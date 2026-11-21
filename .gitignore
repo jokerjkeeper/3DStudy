@@ -1,0 +1,37 @@
+# Unity generated folders in every project
+/[Ll]ibrary/
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Bb]uild/
+[Bb]uilds/
+[Tt]est[Pp]layer/
+[Mm]emory[Cc]aptures/
+[Rr]ecordings/
+.vs/
+.codegraph/
+__pycache__/
+node_modules/
+
+# Editor, export and machine-local files
+*.csproj
+*.sln
+*.slnx
+*.user
+*.log
+*.blend1
+*.blend2
+*.zip.part
+*.tmp
+*.pidb
+*.suo
+.DS_Store
+Thumbs.db
+.mcp.json
+.env
+.env.*
+*.keystore
+*.pfx
+*.p12
