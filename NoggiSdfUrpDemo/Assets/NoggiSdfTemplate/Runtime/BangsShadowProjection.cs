@@ -12,6 +12,7 @@ namespace NoggiSdfToolkit
         static readonly int Origin = Shader.PropertyToID("_BangsOrigin");
         static readonly int Direction = Shader.PropertyToID("_BangsDirection");
         static readonly int Parameters = Shader.PropertyToID("_BangsParams");
+        static readonly int SoftnessId = Shader.PropertyToID("_BangsSoftness");
 
         [SerializeField] Renderer caster;
         [SerializeField, Min(0)] int casterSlot;
@@ -30,12 +31,25 @@ namespace NoggiSdfToolkit
         [SerializeField] float minimumReceiverHeight = -.063f;
         [SerializeField, Min(.05f)] float captureRadius = .125f;
         [SerializeField, Range(0f, 1f)] float strength = .72f;
+        [SerializeField, Range(0f, 1f)] float softness = .21666667f;
         [SerializeField, Min(0f)] float depthBias = .0028f;
 
         const int Resolution = 512;
         RenderTexture depth;
         Material depthMaterial;
         MaterialPropertyBlock properties;
+
+        public float Strength
+        {
+            get => strength;
+            set => strength = Mathf.Clamp01(value);
+        }
+
+        public float Softness
+        {
+            get => softness;
+            set => softness = Mathf.Clamp01(value);
+        }
 
         public bool ProjectionEnabled
         {
@@ -150,6 +164,7 @@ namespace NoggiSdfToolkit
             properties.SetVector(Direction, direction);
             properties.SetVector("_BangsFaceCenter", center);
             properties.SetVector("_BangsReceiverUp", new Vector4(up.x, up.y, up.z, minimumReceiverHeight));
+            properties.SetFloat(SoftnessId, softness);
             properties.SetVector(Parameters, new Vector4(strength, 1f / Resolution, depthBias, 1));
             receiver.SetPropertyBlock(properties, receiverSlot);
         }

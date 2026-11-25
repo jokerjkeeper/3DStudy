@@ -9,6 +9,15 @@ namespace NoggiDemo
         [SerializeField] Transform leftSubject;
         [SerializeField] Transform rightSubject;
 
+        [SerializeField] Renderer[] originalHulls;
+        [SerializeField] Renderer[] authoredHulls;
+
+        static readonly int OutlineWidth = Shader.PropertyToID("_OutlineWidth");
+        static readonly int WidthVariation = Shader.PropertyToID("_WidthVariation");
+        MaterialPropertyBlock outlineBlock;
+        bool emphasize;
+        bool vertexWidth = true;
+
         const float YawLimit = 38f;
         const float HalfWidth = .203f;
         const float HalfHeight = .225f;
@@ -56,9 +65,32 @@ namespace NoggiDemo
             camera.orthographicSize = Mathf.Max(HalfHeight, HalfWidth / camera.aspect);
         }
 
+        public void SetOutlineDisplay(bool thicker, bool useVertexWidth)
+        {
+            emphasize = thicker;
+            vertexWidth = useVertexWidth;
+            ApplyOutlineDisplay(originalHulls, false);
+            ApplyOutlineDisplay(authoredHulls, true);
+        }
+
+        void ApplyOutlineDisplay(Renderer[] hulls, bool authored)
+        {
+            if (hulls == null) return;
+            outlineBlock ??= new MaterialPropertyBlock();
+            foreach (var hull in hulls)
+            {
+                hull.GetPropertyBlock(outlineBlock, 0);
+                outlineBlock.SetFloat(OutlineWidth, hull.sharedMaterial.GetFloat(OutlineWidth) * (emphasize ? 2f : 1f));
+                if (authored)
+                    outlineBlock.SetFloat(WidthVariation, vertexWidth ? 1f : 0f);
+                hull.SetPropertyBlock(outlineBlock, 0);
+            }
+        }
+
         void OnGUI()
         {
-            const float height = 33f;
+            bool hasDiagnostics = authoredHulls != null && authoredHulls.Length > 0;
+            float height = hasDiagnostics ? 57f : 33f;
             float width = Mathf.Min(500f, Screen.width - 24f);
             GUILayout.BeginArea(new Rect((Screen.width - width) * .5f, Screen.height - height - 6f, width, height), GUI.skin.box);
             GUILayout.BeginHorizontal();
@@ -81,6 +113,15 @@ namespace NoggiDemo
             }
             GUILayout.Label($"{yaw:+0;-0;0}°", GUILayout.Width(40f));
             GUILayout.EndHorizontal();
+            if (hasDiagnostics)
+            {
+                GUILayout.BeginHorizontal();
+                bool thicker = GUILayout.Toggle(emphasize, " 2x outline");
+                bool useVertexWidth = GUILayout.Toggle(vertexWidth, " B vertex width");
+                GUILayout.EndHorizontal();
+                if (thicker != emphasize || useVertexWidth != vertexWidth)
+                    SetOutlineDisplay(thicker, useVertexWidth);
+            }
             GUILayout.EndArea();
         }
     }

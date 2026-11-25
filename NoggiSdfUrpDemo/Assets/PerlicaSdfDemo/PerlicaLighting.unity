@@ -337,6 +337,68 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 772606780}
   m_Mesh: {fileID: -5017437812508297076, guid: 9ba30db24ce74cf4a883be4a1c9c18cf, type: 3}
+--- !u!1001 &781785782
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 352432221874774067, guid: de0a67315051f0c4fa49eee989ea744c, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 352432221874774067, guid: de0a67315051f0c4fa49eee989ea744c, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 352432221874774067, guid: de0a67315051f0c4fa49eee989ea744c, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 352432221874774067, guid: de0a67315051f0c4fa49eee989ea744c, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 352432221874774067, guid: de0a67315051f0c4fa49eee989ea744c, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 352432221874774067, guid: de0a67315051f0c4fa49eee989ea744c, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 352432221874774067, guid: de0a67315051f0c4fa49eee989ea744c, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 352432221874774067, guid: de0a67315051f0c4fa49eee989ea744c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 352432221874774067, guid: de0a67315051f0c4fa49eee989ea744c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 352432221874774067, guid: de0a67315051f0c4fa49eee989ea744c, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5006179024549370289, guid: de0a67315051f0c4fa49eee989ea744c, type: 3}
+      propertyPath: m_Name
+      value: Perlica Orbit Rig
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: de0a67315051f0c4fa49eee989ea744c, type: 3}
+--- !u!1 &781785783 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5006179024549370289, guid: de0a67315051f0c4fa49eee989ea744c, type: 3}
+  m_PrefabInstance: {fileID: 781785782}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &799154707
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -664,6 +726,7 @@ MonoBehaviour:
   target: {fileID: 799154712}
   materialSlot: 0
   headBasis: {fileID: 268501398}
+  sdfEnabled: 1
 --- !u!114 &799154714
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -692,6 +755,11 @@ MonoBehaviour:
   captureRadius: 0.125
   strength: 0.72
   depthBias: 0.0028
+--- !u!1 &932978011 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 9ba30db24ce74cf4a883be4a1c9c18cf, type: 3}
+  m_PrefabInstance: {fileID: 799154707}
+  m_PrefabAsset: {fileID: 0}
 --- !u!23 &1138269466 stripped
 MeshRenderer:
   m_CorrespondingSourceObject: {fileID: -6722411908749958877, guid: 9ba30db24ce74cf4a883be4a1c9c18cf, type: 3}
@@ -850,6 +918,9 @@ MonoBehaviour:
   angle: -65
   ink: 1
   bangs: {fileID: 799154714}
+  soloCamera: {fileID: 1205016362}
+  soloModel: {fileID: 932978011}
+  outlineComparison: {fileID: 781785783}
 --- !u!4 &1537554148
 Transform:
   m_ObjectHideFlags: 0
@@ -1075,3 +1146,4 @@ SceneRoots:
   - {fileID: 1177445466}
   - {fileID: 799154707}
   - {fileID: 1537554148}
+  - {fileID: 781785782}

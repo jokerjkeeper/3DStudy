@@ -38,6 +38,8 @@ Material:
     m_Ints: []
     m_Floats:
     - _DebugView: 0
+    - _FaceSdfDisabled: 0
+    - _FaceSdfStrength: 1
     - _Feather: 0.014
     - _InvertMask: 0
     - _LinearizeMaskRgb: 0

@@ -8,6 +8,7 @@ Shader "Noggi SDF Toolkit/Face (URP)"
         [NoScaleOffset] _LipGlossMap ("Optional lip gloss (base UV, alpha mask)", 2D) = "black" {}
         _LipGlossStrength ("Lip gloss strength", Range(0,1)) = 0
         [HideInInspector] _FaceSdfDisabled ("Face SDF bypass", Float) = 0
+        [HideInInspector] _FaceSdfStrength ("Face SDF strength", Range(0,1)) = 1
         _FaceSdf ("SDF mask", 2D) = "white" {}
         [Enum(Red,0,Green,1,Blue,2,Alpha,3,Packed B to R by G,4)] _MaskSource ("Mask channel", Float) = 0
         [Enum(UV0,0,UV1,1)] _MaskUV ("SDF UV channel", Float) = 0
@@ -51,6 +52,7 @@ Shader "Noggi SDF Toolkit/Face (URP)"
                 half4 _ShadeColor;
                 half _LipGlossStrength;
                 half _FaceSdfDisabled;
+                half _FaceSdfStrength;
                 half _MaskSource;
                 half _MaskUV;
                 half _MirrorConvention;
@@ -132,7 +134,8 @@ Shader "Noggi SDF Toolkit/Face (URP)"
                 half softness = max(_Feather, 0.0001);
                 half lit = smoothstep(threshold - softness, threshold + softness, value);
                 half3 baseColor = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.baseUV).rgb;
-                half3 diffuse = lerp(_ShadeColor.rgb, _LitColor.rgb, max(lit, _FaceSdfDisabled));
+                half shadow = (1 - lit) * (1 - _FaceSdfDisabled) * _FaceSdfStrength;
+                half3 diffuse = lerp(_LitColor.rgb, _ShadeColor.rgb, shadow);
                 half3 color = baseColor * diffuse;
                 if (_LipGlossStrength > 0.0)
                 {
@@ -149,5 +152,3 @@ Shader "Noggi SDF Toolkit/Face (URP)"
         }
     }
 }
-
-

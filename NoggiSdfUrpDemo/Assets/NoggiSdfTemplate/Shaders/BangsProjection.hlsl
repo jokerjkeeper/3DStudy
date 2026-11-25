@@ -6,6 +6,7 @@ SAMPLER(sampler_BangsDepth);
 float4x4 _BangsVP;
 float4 _BangsOrigin, _BangsDirection, _BangsParams;
 float4 _BangsFaceCenter, _BangsReceiverUp;
+float _BangsSoftness;
 
 half3 ApplyBangsProjection(half3 color, float3 positionWS)
 {
@@ -26,14 +27,17 @@ half3 ApplyBangsProjection(half3 color, float3 positionWS)
         return color;
 
     half covered = 0;
-    [unroll] for (int y = -1; y <= 1; ++y)
-    [unroll] for (int x = -1; x <= 1; ++x)
+    float compareDepth = (receiverDepth - _BangsParams.z) / _BangsDirection.w;
+    float radius = _BangsSoftness * _BangsParams.y * 6;
+    [unroll] for (int y = -2; y <= 2; ++y)
+    [unroll] for (int x = -2; x <= 2; ++x)
     {
-        float2 offset = float2(x, y) * _BangsParams.y * 1.3;
-        float caster = SAMPLE_TEXTURE2D_LOD(_BangsDepth, sampler_BangsDepth, uv + offset, 0).r * _BangsDirection.w;
-        covered += step(caster + _BangsParams.z, receiverDepth);
+        float2 offset = float2(x, y) * radius * 0.5;
+        half weight = (3 - abs(x)) * (3 - abs(y));
+        float caster = SAMPLE_TEXTURE2D_LOD(_BangsDepth, sampler_BangsDepth, uv + offset, 0).r;
+        covered += step(caster, compareDepth) * weight;
     }
-    return color * lerp(half3(1, 1, 1), half3(.69, .59, .66), covered * faceFade * (_BangsParams.x / 9));
+    return color * lerp(half3(1, 1, 1), half3(.69, .59, .66), covered * faceFade * (_BangsParams.x / 81));
 }
 #endif
 
