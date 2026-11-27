@@ -8,6 +8,7 @@ Unity 3D 測試專案。每個專案保留自己的 Assets、Packages 和 Projec
 | [NoggiSdfUrpDemo](NoggiSdfUrpDemo/) | 臉部 SDF、即時瀏海投影和反殼描邊模板，附 Suzanne 與 Perlica 測試場景。 |
 | [BodyCurrentDemo](BodyCurrentDemo/) | 角色表面電流與接地效果測試。 |
 | [StormLabGraphVerification](StormLabGraphVerification/) | StormLab 的 Shader Graph 和特效比較、驗證素材。 |
+| [InteractiveFog](InteractiveFog/) | 可交互霧氣：Stable Fluids + 渦度約束驅動密度場，URP RenderGraph raymarch 體積霧。 |
 
 ## 技術筆記與操作說明
 

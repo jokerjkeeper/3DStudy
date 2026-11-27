@@ -1,0 +1,200 @@
+// 2D Stable Fluids on the XZ plane (Stam 2003 / Harris, GPU Gems ch.38)
+// + vorticity confinement ("Stir") + curl-noise wind (Bridson 2007)
+// Velocity is in world units / second. Grid cell size = _H.
+
+#pragma kernel ClearVel
+#pragma kernel ClearScalar
+#pragma kernel InitDensity
+#pragma kernel Curl
+#pragma kernel Vorticity
+#pragma kernel Forces
+#pragma kernel Divergence
+#pragma kernel ScaleScalar
+#pragma kernel Jacobi
+#pragma kernel Gradient
+#pragma kernel AdvectVelocity
+#pragma kernel AdvectDensity
+
+#include "FogNoise.hlsl"
+
+#define MAX_INTERACTORS 16
+
+Texture2D<float2>   _VelIn;
+RWTexture2D<float2> _VelOut;
+Texture2D<float>    _SIn;
+RWTexture2D<float>  _SOut;
+Texture2D<float>    _CurlTex;
+Texture2D<float>    _DivTex;
+SamplerState linear_clamp_sampler;
+
+uint   _N;
+float  _H;          // cell size (world units)
+float  _W;          // domain size (world units)
+float2 _Origin;     // world xz of the domain's min corner
+float  _Dt;
+float  _SimTime;
+float  _Eps;        // vorticity confinement strength (already multiplied by _H)
+float  _Wind;       // 0/1
+float  _WindStrength;
+float2 _WindDrift;
+float  _Regen;
+float  _VelDiss;
+float  _Scale;
+
+uint   _ICount;
+float4 _IPos[MAX_INTERACTORS];   // xz, radius, carve rate
+float4 _IVel[MAX_INTERACTORS];   // velocity xz, radial push, follow rate
+float4 _IExtra[MAX_INTERACTORS]; // x: radial push per unit speed
+
+uint2  Cl(int2 p)      { return (uint2)clamp(p, 0, (int)_N - 1); }
+float2 VelAt(int2 p)   { return _VelIn[Cl(p)]; }
+float  SAt(int2 p)     { return _SIn[Cl(p)]; }
+float  CurlAt(int2 p)  { return _CurlTex[Cl(p)]; }
+float2 UV(uint2 id)    { return (float2(id) + 0.5) / (float)_N; }
+float2 WorldXZ(uint2 id) { return _Origin + UV(id) * _W; }
+bool   Out(uint2 id)   { return id.x >= _N || id.y >= _N; }
+
+float BaseDensity(float2 wp)
+{
+    return 0.08 + 0.95 * smoothstep(0.3, 0.7, fbm2(wp * 0.125 + float2(_SimTime * 0.08, 0.0)));
+}
+
+[numthreads(8,8,1)] void ClearVel(uint3 id : SV_DispatchThreadID)    { if (Out(id.xy)) return; _VelOut[id.xy] = 0; }
+[numthreads(8,8,1)] void ClearScalar(uint3 id : SV_DispatchThreadID) { if (Out(id.xy)) return; _SOut[id.xy] = 0; }
+[numthreads(8,8,1)] void InitDensity(uint3 id : SV_DispatchThreadID) { if (Out(id.xy)) return; _SOut[id.xy] = BaseDensity(WorldXZ(id.xy)); }
+
+[numthreads(8,8,1)]
+void Curl(uint3 id : SV_DispatchThreadID)
+{
+    if (Out(id.xy)) return;
+    int2 p = id.xy;
+    float L = VelAt(p - int2(1,0)).y, R = VelAt(p + int2(1,0)).y;
+    float B = VelAt(p - int2(0,1)).x, T = VelAt(p + int2(0,1)).x;
+    _SOut[id.xy] = ((R - L) - (T - B)) / (2.0 * _H);
+}
+
+// f = eps * (N x w),  N = normalize(grad |w|)
+[numthreads(8,8,1)]
+void Vorticity(uint3 id : SV_DispatchThreadID)
+{
+    if (Out(id.xy)) return;
+    int2 p = id.xy;
+    float L = CurlAt(p - int2(1,0)), R = CurlAt(p + int2(1,0));
+    float B = CurlAt(p - int2(0,1)), T = CurlAt(p + int2(0,1));
+    float C = CurlAt(p);
+    float2 f = float2(abs(T) - abs(B), abs(R) - abs(L));
+    f /= length(f) + 1e-5;
+    f *= _Eps * C;
+    f.y = -f.y;
+    _VelOut[id.xy] = _VelIn[id.xy] + f * _Dt;
+}
+
+float WindPsi(float2 p)
+{
+    return vn2(p * 0.11 + float2(_SimTime * 0.02, -_SimTime * 0.013))
+         + 0.5 * vn2(p * 0.23 - float2(_SimTime * 0.03, 0.0));
+}
+
+[numthreads(8,8,1)]
+void Forces(uint3 id : SV_DispatchThreadID)
+{
+    if (Out(id.xy)) return;
+    float2 v  = _VelIn[id.xy];
+    float2 wp = WorldXZ(id.xy);
+
+    for (uint i = 0; i < _ICount; i++)
+    {
+        float2 d  = wp - _IPos[i].xy;
+        float  r  = _IPos[i].z;
+        float  g  = exp(-dot(d, d) / (r * r));
+        float2 iv = _IVel[i].xy;
+        float2 dir = d / (length(d) + 1e-4);
+        float2 tgt = iv + dir * (_IVel[i].z + _IExtra[i].x * length(iv));
+        v = lerp(v, tgt, g * min(_Dt * _IVel[i].w, 1.0));
+    }
+
+    if (_Wind > 0.5)
+    {
+        const float e = 0.15;
+        float2 c = float2(WindPsi(wp + float2(0, e)) - WindPsi(wp - float2(0, e)),
+                        -(WindPsi(wp + float2(e, 0)) - WindPsi(wp - float2(e, 0)))) / (2.0 * e);
+        v += (c * _WindStrength + _WindDrift) * _Dt;
+    }
+    _VelOut[id.xy] = v;
+}
+
+[numthreads(8,8,1)]
+void Divergence(uint3 id : SV_DispatchThreadID)
+{
+    if (Out(id.xy)) return;
+    int2 p = id.xy;
+    float2 C = _VelIn[id.xy];
+    float L = VelAt(p - int2(1,0)).x, R = VelAt(p + int2(1,0)).x;
+    float B = VelAt(p - int2(0,1)).y, T = VelAt(p + int2(0,1)).y;
+    if (p.x == 0)            L = -C.x;
+    if (p.x == (int)_N - 1)  R = -C.x;
+    if (p.y == 0)            B = -C.y;
+    if (p.y == (int)_N - 1)  T = -C.y;
+    _SOut[id.xy] = (R - L + T - B) / (2.0 * _H);
+}
+
+[numthreads(8,8,1)]
+void ScaleScalar(uint3 id : SV_DispatchThreadID)
+{
+    if (Out(id.xy)) return;
+    _SOut[id.xy] = _SIn[id.xy] * _Scale;
+}
+
+// _SIn = pressure
+[numthreads(8,8,1)]
+void Jacobi(uint3 id : SV_DispatchThreadID)
+{
+    if (Out(id.xy)) return;
+    int2 p = id.xy;
+    float L = SAt(p - int2(1,0)), R = SAt(p + int2(1,0));
+    float B = SAt(p - int2(0,1)), T = SAt(p + int2(0,1));
+    _SOut[id.xy] = (L + R + B + T - _H * _H * _DivTex[id.xy]) * 0.25;
+}
+
+// _SIn = pressure
+[numthreads(8,8,1)]
+void Gradient(uint3 id : SV_DispatchThreadID)
+{
+    if (Out(id.xy)) return;
+    int2 p = id.xy;
+    float L = SAt(p - int2(1,0)), R = SAt(p + int2(1,0));
+    float B = SAt(p - int2(0,1)), T = SAt(p + int2(0,1));
+    _VelOut[id.xy] = _VelIn[id.xy] - float2(R - L, T - B) / (2.0 * _H);
+}
+
+[numthreads(8,8,1)]
+void AdvectVelocity(uint3 id : SV_DispatchThreadID)
+{
+    if (Out(id.xy)) return;
+    float2 uv = UV(id.xy) - _Dt * _VelIn[id.xy] / _W;
+    _VelOut[id.xy] = _VelIn.SampleLevel(linear_clamp_sampler, uv, 0) * _VelDiss;
+}
+
+// _SIn = density
+[numthreads(8,8,1)]
+void AdvectDensity(uint3 id : SV_DispatchThreadID)
+{
+    if (Out(id.xy)) return;
+    float2 wp = WorldXZ(id.xy);
+    float2 uv = UV(id.xy) - _Dt * _VelIn[id.xy] / _W;
+    float d = _SIn.SampleLevel(linear_clamp_sampler, uv, 0);
+
+    // fog slowly grows back towards a noise base field
+    d = lerp(d, BaseDensity(wp), 1.0 - exp(-_Regen * _Dt));
+
+    // interactors carve a hole
+    for (uint i = 0; i < _ICount; i++)
+    {
+        float carve = _IPos[i].w;
+        if (carve <= 0) continue;
+        float2 q = wp - _IPos[i].xy;
+        float  r = _IPos[i].z * 0.9;
+        d *= 1.0 - (1.0 - exp(-_Dt * carve)) * exp(-dot(q, q) / (r * r));
+    }
+    _SOut[id.xy] = max(d, 0.0);
+}
